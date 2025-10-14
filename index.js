@@ -19,7 +19,7 @@ app.use(express.static(path.join(__dirname, "public")));
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: '03534530mM',
+    password: '03534530m',
     database: 'steamdb'
 });
 

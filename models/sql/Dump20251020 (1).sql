@@ -26,7 +26,7 @@ CREATE TABLE `categorias` (
   `id_categoria` int NOT NULL AUTO_INCREMENT,
   `nombre` varchar(50) NOT NULL,
   PRIMARY KEY (`id_categoria`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -35,7 +35,7 @@ CREATE TABLE `categorias` (
 
 LOCK TABLES `categorias` WRITE;
 /*!40000 ALTER TABLE `categorias` DISABLE KEYS */;
-INSERT INTO `categorias` VALUES (1,'Acción'),(2,'Aventura'),(3,'RPG'),(4,'Terror');
+INSERT INTO `categorias` VALUES (1,'Acción'),(2,'Aventura'),(3,'RPG'),(4,'Terror'),(5,'Terror'),(6,'Roguelike'),(7,'Multijugador'),(8,'Plataformas'),(9,'Mundo Abierto');
 /*!40000 ALTER TABLE `categorias` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -78,7 +78,7 @@ CREATE TABLE `desarrolladores` (
   `nombre` varchar(100) NOT NULL,
   `pais` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id_desarrollador`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -87,7 +87,7 @@ CREATE TABLE `desarrolladores` (
 
 LOCK TABLES `desarrolladores` WRITE;
 /*!40000 ALTER TABLE `desarrolladores` DISABLE KEYS */;
-INSERT INTO `desarrolladores` VALUES (1,'Valve','EEUU'),(2,'CD Projekt','Polonia'),(3,'Rockstar Games','EEUU');
+INSERT INTO `desarrolladores` VALUES (1,'Valve','EEUU'),(2,'CD Projekt','Polonia'),(3,'Rockstar Games','EEUU'),(4,'FromSoftware','Japón'),(5,'Supergiant Games','EEUU'),(6,'Capcom','Japón'),(7,'Larian Studios','Bélgica'),(8,'Team Cherry','Australia'),(9,'Riot Games','EEUU');
 /*!40000 ALTER TABLE `desarrolladores` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -170,7 +170,7 @@ CREATE TABLE `juego_desarrollador` (
 
 LOCK TABLES `juego_desarrollador` WRITE;
 /*!40000 ALTER TABLE `juego_desarrollador` DISABLE KEYS */;
-INSERT INTO `juego_desarrollador` VALUES (1,1),(2,2),(3,3);
+INSERT INTO `juego_desarrollador` VALUES (1,1),(2,1),(14,1),(3,2),(5,2),(4,3),(7,3),(8,4),(6,5),(9,5),(10,5),(11,6),(12,7),(13,8),(15,9);
 /*!40000 ALTER TABLE `juego_desarrollador` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -189,7 +189,7 @@ CREATE TABLE `juegos` (
   `precio` decimal(6,2) NOT NULL,
   `disponible` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id_juego`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -198,7 +198,7 @@ CREATE TABLE `juegos` (
 
 LOCK TABLES `juegos` WRITE;
 /*!40000 ALTER TABLE `juegos` DISABLE KEYS */;
-INSERT INTO `juegos` VALUES (1,'Half-Life 3','Shooter de Valve','2025-01-01',59.99,0),(2,'Counter Strike 2','Shooter competitivo en línea','2023-09-27',15.99,1),(3,'The Witcher 3','RPG de mundo abierto','2015-05-19',29.99,1),(4,'GTA V','Acción en mundo abierto','2013-09-17',19.99,1),(5,'Cyberpunk 2077','RPG futurista','2020-12-10',49.99,1),(6,'Stardew Valley','Juego de granjas','2018-06-02',8.00,1);
+INSERT INTO `juegos` VALUES (1,'Half-Life 3','Shooter de Valve','2025-01-01',59.99,0),(2,'Counter Strike 2','Shooter competitivo en línea','2023-09-27',15.99,1),(3,'The Witcher 3','RPG de mundo abierto','2015-05-19',29.99,1),(4,'GTA V','Acción en mundo abierto','2013-09-17',19.99,1),(5,'Cyberpunk 2077','RPG futurista','2020-12-10',49.99,1),(6,'Stardew Valley','Juego de granjas','2018-06-02',8.00,1),(7,'Red Dead Redemption 2','Aventura y acción en el viejo oeste','2018-10-26',49.99,1),(8,'Elden Ring','RPG de mundo abierto desarrollado por FromSoftware','2022-02-25',59.99,1),(9,'Doom Eternal','Shooter frenético en primera persona','2020-03-20',39.99,1),(10,'Hades','Roguelike de acción ambientado en la mitología griega','2020-09-17',24.99,1),(11,'Resident Evil 4 Remake','Survival horror clásico reimaginado','2023-03-24',59.99,1),(12,'Baldur’s Gate 3','RPG basado en Dungeons & Dragons','2023-08-03',69.99,1),(13,'Hollow Knight','Metroidvania con combates desafiantes y estilo artístico único','2017-02-24',14.99,1),(14,'Portal 2','Juego de puzzles en primera persona de Valve','2011-04-19',9.99,1),(15,'Valorant','Shooter táctico competitivo en línea','2020-06-02',0.00,1);
 /*!40000 ALTER TABLE `juegos` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -303,4 +303,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-14 12:10:44
+-- Dump completed on 2025-10-20 17:18:51

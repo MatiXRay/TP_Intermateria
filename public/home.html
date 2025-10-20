@@ -20,6 +20,9 @@
         <p class="subtitle">Selecciona una opción para continuar</p>
       </div>
 
+
+
+      
       <div class="endpoints-container">
         <button class="endpoint-button" onclick="callEndpoint('juegos_baratos')">
           Juegos Baratos
@@ -27,6 +30,7 @@
         <button class="endpoint-button" onclick="callEndpoint('juegos_caros')">
           Juegos Caros
         </button>
+
 
         <button class="logout" onclick="cerrarSesion()">
           <a href="home.html" class="logout" onclick="cerrarSesion()">
@@ -39,8 +43,20 @@
         </button>
 
         <div id="endpoint-data" style="margin-top: 2rem; color: #64ffda;"></div>
-
       </div>
+
+
+    <select id="categoriaSelect" onchange="filtrarPorCategoria()">
+      <option value="">Seleccionar categoría</option>
+      <option value="Acción">Acción</option>
+      <option value="RPG">RPG</option>
+      <option value="Aventura">Aventura</option>
+    </select>
+
+
+
+
+
     </div>
 
     <script>
@@ -98,6 +114,9 @@ Object.keys(data[0]).forEach((key) => {
 });
 tableHTML += "</tr></thead><tbody>";
 
+
+
+
 // Filas con clases especiales según el tipo de dato
 data.forEach((item) => {
   tableHTML += "<tr>";
@@ -139,6 +158,36 @@ container.innerHTML = tableHTML;
       alert("Ocurrió un error al llamar al endpoint");
     });
 }
+
+
+
+
+async function filtrarPorCategoria() {
+  const categoria = document.getElementById("categoriaSelect").value;
+  if (!categoria) return;
+
+  const res = await fetch(`http://localhost:3000/juegos/categoria/${categoria}`);
+  const data = await res.json();
+
+  const container = document.getElementById("endpoint-data");
+  if (!Array.isArray(data)) {
+    container.innerHTML = "<p>No se encontraron juegos en esta categoría.</p>";
+    return;
+  }
+
+  let tableHTML = "<table class='data-table'><tr><th>Título</th><th>Precio</th></tr>";
+  data.forEach(j => {
+    tableHTML += `<tr><td>${j.titulo}</td><td>$${j.precio}</td></tr>`;
+  });
+  tableHTML += "</table>";
+  container.innerHTML = tableHTML;
+}
+
+
+
+
+
+
 
       // Crear partículas flotantes
       function createParticles() {

@@ -99,7 +99,7 @@
 
               if (response.ok) {
                 localStorage.setItem("usuarioNombre", data.usuario.nombre);
-                localStorage.setItem("token", data.token); // ✅ guardamos el JWT en el localStorage
+                localStorage.setItem("token", data.token); // se guarda el JWT en el localstorage
                 window.location.href = "home.html";
               } else {
                 alert(data.mensaje);

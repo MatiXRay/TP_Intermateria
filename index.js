@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql2');
@@ -5,22 +6,37 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const cookieParser = require('cookie-parser');
 const path = require("path");
+const mongoose = require('mongoose');
+const CategoriaMongo = require('./models/CategoriaMongo');
+
 
 const app = express();
 app.use(cors({
-    origin: 'http://localhost:3000', // o donde sirvas tus archivos HTML
+    origin: process.env.CLIENT_ORIGIN, // o donde sirvas tus archivos HTML
     credentials: true
 }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
+
+
+// Conexion MongoDB
+mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+
+    .then(() => console.log("Conectado a MongoDB!"))
+    .catch(err => console.error("ERROR al conectar MongoDB :( ", err));
+
+
 // Conexión MySQL
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '03534530m',
-    database: 'steamdb'
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME
 });
 
 db.connect(err => {
@@ -29,8 +45,8 @@ db.connect(err => {
 });
 
 // 🔐 SECRET para JWT (usá variable de entorno en producción)
-const JWT_SECRET = 'clave_super_secreta_123';
-const TOKEN_EXPIRATION = '15m';
+const JWT_SECRET = process.env.JWT_SECRET;
+const TOKEN_EXPIRATION = process.env.TOKEN_EXPIRATION;
 
 // Función para generar token
 function generarToken(usuario) {
@@ -78,6 +94,24 @@ app.post('/login', (req, res) => {
 });
 
 // 🧱 ENDPOINTS PROTEGIDOS
+
+
+// Obtener juegos por categoría desde Mongo
+app.get("/juegos/categoria/:nombre", async (req, res) => {
+  try {
+    const categoria = req.params.nombre;
+    const data = await CategoriaMongo.findOne({ categoria });
+
+    if (!data) return res.status(404).json({ mensaje: "Categoría no encontrada" });
+    res.json(data.juegos);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+
+// Filtrar juegos por precio en MySQL
 app.get("/juegos_caros", autenticarToken, (req, res) => {
     db.query("CALL Juegos_Mayores_20()", (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -97,5 +131,5 @@ app.post('/logout', (req, res) => {
     res.json({ mensaje: 'Sesión cerrada' });
 });
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor en http://localhost:${PORT}`));

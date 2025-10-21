@@ -95,8 +95,18 @@ app.post('/login', (req, res) => {
 
 // 🧱 ENDPOINTS PROTEGIDOS
 
+// ✅ Obtener todos los juegos desde MySQL
+app.get("/api/juegos", autenticarToken, (req, res) => {
+    const query = "SELECT * FROM juegos";
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error("Error al obtener los juegos:", err);
+            return res.status(500).json({ error: "Error al obtener los juegos" });
+        }
+        res.json(results);
+    });
+});
 
-// Agregar este endpoint en index.js después de los otros endpoints de MongoDB
 
 // Obtener todas las categorías disponibles desde MongoDB
 app.get("/categorias", autenticarToken, async (req, res) => {

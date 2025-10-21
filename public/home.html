@@ -1,262 +1,305 @@
 <!DOCTYPE html>
 <html lang="es">
-  </audio>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Home</title>
+    <title>Steam Dashboard 2.0</title>
     <link rel="stylesheet" href="css/home.css" />
   </head>
   <body>
-    <div class="floating-particles" id="particles"></div>
+    <div class="bg-animation"></div>
     <div class="stars" id="stars"></div>
 
-    <div class="home-container">
-      <div class="welcome-section">
-        <p class="welcome-text">¡Bienvenido crack!</p>
-        <div class="username-container">
-          <h1 class="username-animated" id="username"></h1>
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="navbar-brand">
+        <div class="logo">🎮 STEAM DB</div>
+      </div>
+      <div class="user-info">
+        <div class="user-avatar" id="userAvatar"></div>
+        <span class="user-name" id="userName"></span>
+        <button class="logout-btn" onclick="cerrarSesion()">
+          🚪 Cerrar Sesión
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+      <!-- Hero Section -->
+      <section class="hero-section">
+        <h1 class="hero-title" id="dashboardTitle">Bienvenido al Dashboard</h1>
+        <p class="hero-subtitle">
+          Explora tu biblioteca de juegos y descubre nuevas aventuras
+        </p>
+      </section>
+
+      <!-- Control Panel -->
+      <div class="control-panel">
+        <h2 class="panel-title">Panel de Control</h2>
+
+        <div class="controls-grid">
+          <div class="control-card" onclick="callEndpoint('juegos_baratos')">
+            <div class="card-icon">💰</div>
+            <div class="card-title">Juegos Económicos</div>
+            <div class="card-description">Precios ≤ $20</div>
+          </div>
+
+          <div class="control-card" onclick="callEndpoint('juegos_caros')">
+            <div class="card-icon">💎</div>
+            <div class="card-title">Juegos Premium</div>
+            <div class="card-description">Precios > $20</div>
+          </div>
+
+          <div class="control-card" onclick="mostrarEstadisticas()">
+            <div class="card-icon">📈</div>
+            <div class="card-title">Estadísticas</div>
+            <div class="card-description">Ver análisis completo</div>
+          </div>
         </div>
-        <p class="subtitle">Selecciona una opción para continuar</p>
+
+        <div class="filter-section">
+          <span class="filter-label">🎯 Filtrar por categoría:</span>
+          <select
+            id="categoriaSelect"
+            class="category-select"
+            onchange="filtrarPorCategoria()"
+          >
+            <option value="">Todas las categorías</option>
+          </select>
+        </div>
       </div>
 
-
-
-      
-      <div class="endpoints-container">
-        <button class="endpoint-button" onclick="callEndpoint('juegos_baratos')">
-          Juegos Baratos
-        </button>
-        <button class="endpoint-button" onclick="callEndpoint('juegos_caros')">
-          Juegos Caros
-        </button>
-
-
-        <button class="logout" onclick="cerrarSesion()">
-          <a href="home.html" class="logout" onclick="cerrarSesion()">
-            <img
-              src="https://img.icons8.com/?size=100&id=59781&format=png&color=000000"
-              alt="Salir"
-              class="icono-logout"
-            />
-          </a>
-        </button>
-
-        <div id="endpoint-data" style="margin-top: 2rem; color: #64ffda;"></div>
+      <!-- Data Section -->
+      <div class="data-section">
+        <h2 class="data-title">Resultados</h2>
+        <div id="endpoint-data">
+          <div class="empty-state">
+            <div class="empty-icon">🎮</div>
+            <div class="empty-text">
+              Selecciona una opción para ver los datos
+            </div>
+          </div>
+        </div>
       </div>
-
-
-    <select id="categoriaSelect" onchange="filtrarPorCategoria()">
-      <option value="">Seleccionar categoría</option>
-      <option value="Acción">Acción</option>
-      <option value="RPG">RPG</option>
-      <option value="Aventura">Aventura</option>
-    </select>
-
-
-
-
-
     </div>
 
     <script>
-  // Reemplaza el script completo en home.html con este código actualizado
+      const nombreUsuario = localStorage.getItem("usuarioNombre");
+      if (nombreUsuario) {
+        document.getElementById("userName").textContent = nombreUsuario;
+        document.getElementById("userAvatar").textContent = nombreUsuario
+          .charAt(0)
+          .toUpperCase();
 
-const nombreUsuario = localStorage.getItem("usuarioNombre");
-if (nombreUsuario) {
-  document.getElementById("username").textContent = nombreUsuario;
-} else {
-  window.location.href = "index.html";
-}
+        // 👇 Esta línea nueva actualiza el H1
+        document.getElementById(
+          "dashboardTitle"
+        ).textContent = `Bienvenido al Dashboard, ${nombreUsuario}`;
+      } else {
+        window.location.href = "index.html";
+      }
+      // Cargar categorías al iniciar
+      async function cargarCategorias() {
+        const token = localStorage.getItem("token");
+        try {
+          const res = await fetch("http://localhost:3000/categorias", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
 
-// Cargar categorías al iniciar la página
-async function cargarCategorias() {
-  const token = localStorage.getItem("token");
-  try {
-    const res = await fetch("http://localhost:3000/categorias", {
-      headers: { "Authorization": `Bearer ${token}` }
-    });
-    
-    if (!res.ok) {
-      throw new Error("Error al cargar categorías");
-    }
-    
-    const categorias = await res.json();
-    const select = document.getElementById("categoriaSelect");
-    
-    // Limpiar opciones existentes excepto la primera
-    select.innerHTML = '<option value="">Seleccionar categoría</option>';
-    
-    // Agregar cada categoría como opción
-    categorias.forEach(cat => {
-      const option = document.createElement("option");
-      option.value = cat;
-      option.textContent = cat;
-      select.appendChild(option);
-    });
-  } catch (err) {
-    console.error("Error al cargar categorías:", err);
-    alert("No se pudieron cargar las categorías");
-  }
-}
+          if (!res.ok) throw new Error("Error al cargar categorías");
 
-function cerrarSesion() {
-  localStorage.clear();
-  sessionStorage.clear();
-  window.location.href = "index.html";
-}
+          const categorias = await res.json();
+          const select = document.getElementById("categoriaSelect");
 
-function callEndpoint(endpointName) {
-  const button = event.target.closest(".endpoint-button");
-  const originalText = button.innerHTML;
+          select.innerHTML = '<option value="">Todas las categorías</option>';
 
-  button.innerHTML = '<span class="endpoint-icon">⏳</span>Cargando...';
-  button.style.pointerEvents = "none";
-  button.style.opacity = "0.7";
-
-  const token = localStorage.getItem("token");
-  fetch(`http://localhost:3000/${endpointName}`, {
-    headers: { "Authorization": `Bearer ${token}` }
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      button.innerHTML = originalText;
-      button.style.pointerEvents = "auto";
-      button.style.opacity = "1";
-
-      const container = document.getElementById("endpoint-data");
-      if (data.length === 0) {
-        container.innerHTML = "<p>No se encontraron resultados.</p>";
-        return;
+          categorias.forEach((cat) => {
+            const option = document.createElement("option");
+            option.value = cat;
+            option.textContent = cat;
+            select.appendChild(option);
+          });
+        } catch (err) {
+          console.error("Error al cargar categorías:", err);
+        }
       }
 
-      let tableHTML = '<table class="data-table">';
-      tableHTML += "<thead><tr>";
+      function cerrarSesion() {
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = "index.html";
+      }
 
-      Object.keys(data[0]).forEach((key) => {
-        const displayName = key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' ');
-        tableHTML += `<th>${displayName}</th>`;
-      });
-      tableHTML += "</tr></thead><tbody>";
+      function callEndpoint(endpointName) {
+        const button = event.target.closest(".control-card");
+        const container = document.getElementById("endpoint-data");
 
-      data.forEach((item) => {
-        tableHTML += "<tr>";
-        Object.entries(item).forEach(([key, value]) => {
-          let cellClass = '';
-          let displayValue = value;
-          
-          if (key.toLowerCase().includes('precio') || key.toLowerCase().includes('price')) {
-            cellClass = 'price';
-            if (typeof value === 'number') {
-              displayValue = `$${value.toLocaleString()}`;
+        container.innerHTML =
+          '<div style="text-align: center; padding: 3rem;"><div class="loading"></div><p style="color: #94a3b8; margin-top: 1rem;">Cargando datos...</p></div>';
+
+        const token = localStorage.getItem("token");
+        fetch(`http://localhost:3000/${endpointName}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.length === 0) {
+              container.innerHTML =
+                '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">No se encontraron resultados</div></div>';
+              return;
             }
-          } else if (key.toLowerCase().includes('nombre') || 
-                    key.toLowerCase().includes('name') || 
-                    key.toLowerCase().includes('titulo') ||
-                    key.toLowerCase().includes('title')) {
-            cellClass = 'name';
-          } else if (key.toLowerCase().includes('categoria') || 
-                    key.toLowerCase().includes('category') || 
-                    key.toLowerCase().includes('genero') ||
-                    key.toLowerCase().includes('genre')) {
-            cellClass = 'category';
+
+            let tableHTML = '<table class="data-table"><thead><tr>';
+
+            Object.keys(data[0]).forEach((key) => {
+              const displayName =
+                key.charAt(0).toUpperCase() + key.slice(1).replace("_", " ");
+              tableHTML += `<th>${displayName}</th>`;
+            });
+            tableHTML += "</tr></thead><tbody>";
+
+            data.forEach((item) => {
+              tableHTML += "<tr>";
+              Object.entries(item).forEach(([key, value]) => {
+                let cellClass = "";
+                let displayValue = value;
+
+                if (
+                  key.toLowerCase().includes("precio") ||
+                  key.toLowerCase().includes("price")
+                ) {
+                  cellClass = "price";
+                  if (typeof value === "number") {
+                    displayValue = `$${value.toLocaleString()}`;
+                  }
+                } else if (
+                  key.toLowerCase().includes("nombre") ||
+                  key.toLowerCase().includes("name") ||
+                  key.toLowerCase().includes("titulo") ||
+                  key.toLowerCase().includes("title")
+                ) {
+                  cellClass = "name";
+                }
+
+                tableHTML += `<td class="${cellClass}">${displayValue}</td>`;
+              });
+              tableHTML += "</tr>";
+            });
+
+            tableHTML += "</tbody></table>";
+            container.innerHTML = tableHTML;
+          })
+          .catch((err) => {
+            console.error(err);
+            container.innerHTML =
+              '<div class="empty-state"><div class="empty-icon">❌</div><div class="empty-text">Error al cargar los datos</div></div>';
+          });
+      }
+
+      async function filtrarPorCategoria() {
+        const categoria = document.getElementById("categoriaSelect").value;
+        const container = document.getElementById("endpoint-data");
+
+        if (!categoria) {
+          container.innerHTML =
+            '<div class="empty-state"><div class="empty-icon">🎮</div><div class="empty-text">Selecciona una categoría</div></div>';
+          return;
+        }
+
+        container.innerHTML =
+          '<div style="text-align: center; padding: 3rem;"><div class="loading"></div><p style="color: #94a3b8; margin-top: 1rem;">Cargando juegos...</p></div>';
+
+        const token = localStorage.getItem("token");
+        const res = await fetch(
+          `http://localhost:3000/juegos/categoria/${categoria}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
           }
-          
-          tableHTML += `<td class="${cellClass}">${displayValue}</td>`;
+        );
+        const data = await res.json();
+
+        if (!Array.isArray(data) || data.length === 0) {
+          container.innerHTML =
+            '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">No hay juegos en esta categoría</div></div>';
+          return;
+        }
+
+        let tableHTML =
+          '<table class="data-table"><thead><tr><th>Título</th><th>Precio</th><th>Estado</th></tr></thead><tbody>';
+        data.forEach((j) => {
+          const disponible = j.disponible
+            ? '<span class="badge badge-success">✓ Disponible</span>'
+            : '<span class="badge badge-danger">✗ No disponible</span>';
+          tableHTML += `<tr><td class="name">${j.titulo}</td><td class="price">$${j.precio}</td><td>${disponible}</td></tr>`;
         });
-        tableHTML += "</tr>";
-      });
+        tableHTML += "</tbody></table>";
+        container.innerHTML = tableHTML;
+      }
 
-      tableHTML += "</tbody></table>";
-      container.innerHTML = tableHTML;
-    })
-    .catch((err) => {
-      button.innerHTML = originalText;
-      button.style.pointerEvents = "auto";
-      button.style.opacity = "1";
-      console.error(err);
-      alert("Ocurrió un error al llamar al endpoint");
-    });
-}
+      async function mostrarEstadisticas() {
+        const container = document.getElementById("endpoint-data");
+        container.innerHTML = "<p>Cargando juegos...</p>";
 
-async function filtrarPorCategoria() {
-  const categoria = document.getElementById("categoriaSelect").value;
-  if (!categoria) {
-    document.getElementById("endpoint-data").innerHTML = "";
-    return;
-  }
+        try {
+          const response = await fetch("http://localhost:3000/api/juegos", {
+            headers: {
+              Authorization: "Bearer " + localStorage.getItem("token"),
+            },
+          });
 
-  const token = localStorage.getItem("token");
-  const res = await fetch(`http://localhost:3000/juegos/categoria/${categoria}`, {
-    headers: { "Authorization": `Bearer ${token}` }
-  });
-  const data = await res.json();
+          if (!response.ok) throw new Error("Error al obtener los juegos");
 
-  const container = document.getElementById("endpoint-data");
-  if (!Array.isArray(data)) {
-    container.innerHTML = "<p>No se encontraron juegos en esta categoría.</p>";
-    return;
-  }
+          const juegos = await response.json();
 
-  let tableHTML = "<table class='data-table'><thead><tr><th>Título</th><th>Precio</th><th>Disponible</th></tr></thead><tbody>";
-  data.forEach(j => {
-    const disponible = j.disponible ? "Sí" : "No";
-    tableHTML += `<tr><td class="name">${j.titulo}</td><td class="price">$${j.precio}</td><td>${disponible}</td></tr>`;
-  });
-  tableHTML += "</tbody></table>";
-  container.innerHTML = tableHTML;
-}
+          // Mostrar todos los juegos
+          const juegosHTML = juegos
+            .map(
+              (j) => `
+      <div class="juego-card">
+        <h3>${j.nombre}</h3>
+        <p><strong>Precio:</strong> $${j.precio}</p>
+        <p><strong>Categoría:</strong> ${j.categoria}</p>
+      </div>
+    `
+            )
+            .join("");
 
-// Crear partículas flotantes
-function createParticles() {
-  const particlesContainer = document.getElementById("particles");
+          // Calcular estadísticas
+          const totalJuegos = juegos.length;
+          const valorTotal = juegos.reduce(
+            (acc, j) => acc + (parseFloat(j.precio) || 0),
+            0
+          );
 
-  for (let i = 0; i < 20; i++) {
-    const particle = document.createElement("div");
-    particle.className = "particle";
+          container.innerHTML = `
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-value">${totalJuegos}</div><div class="stat-label">Total Juegos</div></div>
+        <div class="stat-card"><div class="stat-value">$${valorTotal.toFixed(
+          2
+        )}</div><div class="stat-label">Valor Total</div></div>
+      </div>
+    `;
+        } catch (error) {
+          console.error(error);
+          container.innerHTML = "<p>Error al cargar los juegos 😢</p>";
+        }
+      }
 
-    const size = Math.random() * 4 + 2;
-    const startPosition = Math.random() * 100;
-    const animationDelay = Math.random() * 25;
+      function createStars() {
+        const starsContainer = document.getElementById("stars");
+        for (let i = 0; i < 100; i++) {
+          const star = document.createElement("div");
+          star.className = "star";
+          star.style.left = Math.random() * 100 + "%";
+          star.style.top = Math.random() * 100 + "%";
+          star.style.animationDelay = Math.random() * 3 + "s";
+          starsContainer.appendChild(star);
+        }
+      }
 
-    particle.style.width = size + "px";
-    particle.style.height = size + "px";
-    particle.style.left = startPosition + "%";
-    particle.style.animationDelay = animationDelay + "s";
-
-    particlesContainer.appendChild(particle);
-  }
-}
-
-// Crear estrellas parpadeantes
-function createStars() {
-  const starsContainer = document.getElementById("stars");
-
-  for (let i = 0; i < 50; i++) {
-    const star = document.createElement("div");
-    star.className = "star";
-
-    star.style.left = Math.random() * 100 + "%";
-    star.style.top = Math.random() * 100 + "%";
-    star.style.animationDelay = Math.random() * 3 + "s";
-
-    starsContainer.appendChild(star);
-  }
-}
-
-// Inicializar efectos y cargar categorías
-createParticles();
-createStars();
-cargarCategorias(); // ← Llamada importante para cargar las categorías
-
-// Agregar efecto de click en el nombre de usuario
-document.getElementById("username").addEventListener("click", function () {
-  this.style.animation = "none";
-  setTimeout(() => {
-    this.style.animation =
-      "gradientShift 3s ease-in-out infinite, rotate360 4s linear infinite, bounce 2s ease-in-out infinite, glow 2s ease-in-out infinite alternate";
-  }, 100);
-});
+      createStars();
+      cargarCategorias();
     </script>
   </body>
 </html>

@@ -21,6 +21,20 @@ mongoose.connect("mongodb://localhost:27017/steamdb_mongo");
         { titulo: "The Witcher 3", precio: 29.99, disponible: true },
         { titulo: "Cyberpunk 2077", precio: 49.99, disponible: true }
       ]
+    },
+    {
+      categoria: "Aventura",
+      juegos: [
+        { titulo: "Uncharted 4", precio: 39.99, desarrollador: true },
+        { titulo: "The Last of Us", precio: 34.99, disponible: true }
+      ]
+    },
+    {
+      categoria: "Terror",
+      juegos: [
+        { titulo: "Resident Evil Village", precio: 44.99, disponible: true },
+        { titulo: "Silent Hill 2", precio: 29.99, disponible: true }
+      ]
     }
   ]);
 

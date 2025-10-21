@@ -60,22 +60,53 @@
     </div>
 
     <script>
-      const nombreUsuario = localStorage.getItem("usuarioNombre");
-      if (nombreUsuario) {
-        document.getElementById("username").textContent = nombreUsuario;
-      } else {
-        // Si no hay usuario, redirigir al login
-        window.location.href = "index.html";
-      }
+  // Reemplaza el script completo en home.html con este código actualizado
 
-      function cerrarSesion() {
-        localStorage.clear();
-        sessionStorage.clear();
-        window.location.href = "index.html";
-      }
+const nombreUsuario = localStorage.getItem("usuarioNombre");
+if (nombreUsuario) {
+  document.getElementById("username").textContent = nombreUsuario;
+} else {
+  window.location.href = "index.html";
+}
 
-      // Función para simular llamadas a endpoints
-      function callEndpoint(endpointName) {
+// Cargar categorías al iniciar la página
+async function cargarCategorias() {
+  const token = localStorage.getItem("token");
+  try {
+    const res = await fetch("http://localhost:3000/categorias", {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    
+    if (!res.ok) {
+      throw new Error("Error al cargar categorías");
+    }
+    
+    const categorias = await res.json();
+    const select = document.getElementById("categoriaSelect");
+    
+    // Limpiar opciones existentes excepto la primera
+    select.innerHTML = '<option value="">Seleccionar categoría</option>';
+    
+    // Agregar cada categoría como opción
+    categorias.forEach(cat => {
+      const option = document.createElement("option");
+      option.value = cat;
+      option.textContent = cat;
+      select.appendChild(option);
+    });
+  } catch (err) {
+    console.error("Error al cargar categorías:", err);
+    alert("No se pudieron cargar las categorías");
+  }
+}
+
+function cerrarSesion() {
+  localStorage.clear();
+  sessionStorage.clear();
+  window.location.href = "index.html";
+}
+
+function callEndpoint(endpointName) {
   const button = event.target.closest(".endpoint-button");
   const originalText = button.innerHTML;
 
@@ -83,73 +114,62 @@
   button.style.pointerEvents = "none";
   button.style.opacity = "0.7";
 
-  // Llamada real a la API
   const token = localStorage.getItem("token");
-fetch(`http://localhost:3000/${endpointName}`, {      //manda el token en el header Authorization.
-  headers: { "Authorization": `Bearer ${token}` }     //cada endpoint estará protegido con JWT.
-})
+  fetch(`http://localhost:3000/${endpointName}`, {
+    headers: { "Authorization": `Bearer ${token}` }
+  })
     .then((res) => res.json())
     .then((data) => {
-      // Restaurar botón
       button.innerHTML = originalText;
       button.style.pointerEvents = "auto";
       button.style.opacity = "1";
 
-      // Mostrar datos en la página
       const container = document.getElementById("endpoint-data");
       if (data.length === 0) {
         container.innerHTML = "<p>No se encontraron resultados.</p>";
         return;
       }
 
-      // Crear tabla dinámica
-     // Crear tabla con estilos mejorados
-let tableHTML = '<table class="data-table">';
-tableHTML += "<thead><tr>";
+      let tableHTML = '<table class="data-table">';
+      tableHTML += "<thead><tr>";
 
-// Encabezados de la tabla (keys del primer objeto)
-Object.keys(data[0]).forEach((key) => {
-  const displayName = key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' ');
-  tableHTML += `<th>${displayName}</th>`;
-});
-tableHTML += "</tr></thead><tbody>";
+      Object.keys(data[0]).forEach((key) => {
+        const displayName = key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' ');
+        tableHTML += `<th>${displayName}</th>`;
+      });
+      tableHTML += "</tr></thead><tbody>";
 
+      data.forEach((item) => {
+        tableHTML += "<tr>";
+        Object.entries(item).forEach(([key, value]) => {
+          let cellClass = '';
+          let displayValue = value;
+          
+          if (key.toLowerCase().includes('precio') || key.toLowerCase().includes('price')) {
+            cellClass = 'price';
+            if (typeof value === 'number') {
+              displayValue = `$${value.toLocaleString()}`;
+            }
+          } else if (key.toLowerCase().includes('nombre') || 
+                    key.toLowerCase().includes('name') || 
+                    key.toLowerCase().includes('titulo') ||
+                    key.toLowerCase().includes('title')) {
+            cellClass = 'name';
+          } else if (key.toLowerCase().includes('categoria') || 
+                    key.toLowerCase().includes('category') || 
+                    key.toLowerCase().includes('genero') ||
+                    key.toLowerCase().includes('genre')) {
+            cellClass = 'category';
+          }
+          
+          tableHTML += `<td class="${cellClass}">${displayValue}</td>`;
+        });
+        tableHTML += "</tr>";
+      });
 
-
-
-// Filas con clases especiales según el tipo de dato
-data.forEach((item) => {
-  tableHTML += "<tr>";
-  Object.entries(item).forEach(([key, value]) => {
-    let cellClass = '';
-    let displayValue = value;
-    
-    // Asignar clases especiales según el tipo de dato
-    if (key.toLowerCase().includes('precio') || key.toLowerCase().includes('price')) {
-      cellClass = 'price';
-      if (typeof value === 'number') {
-        displayValue = `$${value.toLocaleString()}`;
-      }
-    } else if (key.toLowerCase().includes('nombre') || 
-              key.toLowerCase().includes('name') || 
-              key.toLowerCase().includes('titulo') ||
-              key.toLowerCase().includes('title')) {
-      cellClass = 'name';
-    } else if (key.toLowerCase().includes('categoria') || 
-              key.toLowerCase().includes('category') || 
-              key.toLowerCase().includes('genero') ||
-              key.toLowerCase().includes('genre')) {
-      cellClass = 'category';
-    }
-    
-    tableHTML += `<td class="${cellClass}">${displayValue}</td>`;
-  });
-  tableHTML += "</tr>";
-});
-
-tableHTML += "</tbody></table>";
-container.innerHTML = tableHTML;
-})
+      tableHTML += "</tbody></table>";
+      container.innerHTML = tableHTML;
+    })
     .catch((err) => {
       button.innerHTML = originalText;
       button.style.pointerEvents = "auto";
@@ -159,14 +179,17 @@ container.innerHTML = tableHTML;
     });
 }
 
-
-
-
 async function filtrarPorCategoria() {
   const categoria = document.getElementById("categoriaSelect").value;
-  if (!categoria) return;
+  if (!categoria) {
+    document.getElementById("endpoint-data").innerHTML = "";
+    return;
+  }
 
-  const res = await fetch(`http://localhost:3000/juegos/categoria/${categoria}`);
+  const token = localStorage.getItem("token");
+  const res = await fetch(`http://localhost:3000/juegos/categoria/${categoria}`, {
+    headers: { "Authorization": `Bearer ${token}` }
+  });
   const data = await res.json();
 
   const container = document.getElementById("endpoint-data");
@@ -175,89 +198,65 @@ async function filtrarPorCategoria() {
     return;
   }
 
-  let tableHTML = "<table class='data-table'><tr><th>Título</th><th>Precio</th></tr>";
+  let tableHTML = "<table class='data-table'><thead><tr><th>Título</th><th>Precio</th><th>Disponible</th></tr></thead><tbody>";
   data.forEach(j => {
-    tableHTML += `<tr><td>${j.titulo}</td><td>$${j.precio}</td></tr>`;
+    const disponible = j.disponible ? "Sí" : "No";
+    tableHTML += `<tr><td class="name">${j.titulo}</td><td class="price">$${j.precio}</td><td>${disponible}</td></tr>`;
   });
-  tableHTML += "</table>";
+  tableHTML += "</tbody></table>";
   container.innerHTML = tableHTML;
 }
 
+// Crear partículas flotantes
+function createParticles() {
+  const particlesContainer = document.getElementById("particles");
 
+  for (let i = 0; i < 20; i++) {
+    const particle = document.createElement("div");
+    particle.className = "particle";
 
+    const size = Math.random() * 4 + 2;
+    const startPosition = Math.random() * 100;
+    const animationDelay = Math.random() * 25;
 
+    particle.style.width = size + "px";
+    particle.style.height = size + "px";
+    particle.style.left = startPosition + "%";
+    particle.style.animationDelay = animationDelay + "s";
 
+    particlesContainer.appendChild(particle);
+  }
+}
 
+// Crear estrellas parpadeantes
+function createStars() {
+  const starsContainer = document.getElementById("stars");
 
-      // Crear partículas flotantes
-      function createParticles() {
-        const particlesContainer = document.getElementById("particles");
+  for (let i = 0; i < 50; i++) {
+    const star = document.createElement("div");
+    star.className = "star";
 
-        for (let i = 0; i < 20; i++) {
-          const particle = document.createElement("div");
-          particle.className = "particle";
+    star.style.left = Math.random() * 100 + "%";
+    star.style.top = Math.random() * 100 + "%";
+    star.style.animationDelay = Math.random() * 3 + "s";
 
-          const size = Math.random() * 4 + 2;
-          const startPosition = Math.random() * 100;
-          const animationDelay = Math.random() * 25;
+    starsContainer.appendChild(star);
+  }
+}
 
-          particle.style.width = size + "px";
-          particle.style.height = size + "px";
-          particle.style.left = startPosition + "%";
-          particle.style.animationDelay = animationDelay + "s";
+// Inicializar efectos y cargar categorías
+createParticles();
+createStars();
+cargarCategorias(); // ← Llamada importante para cargar las categorías
 
-          particlesContainer.appendChild(particle);
-        }
-      }
-
-      // Crear estrellas parpadeantes
-      function createStars() {
-        const starsContainer = document.getElementById("stars");
-
-        for (let i = 0; i < 50; i++) {
-          const star = document.createElement("div");
-          star.className = "star";
-
-          star.style.left = Math.random() * 100 + "%";
-          star.style.top = Math.random() * 100 + "%";
-          star.style.animationDelay = Math.random() * 3 + "s";
-
-          starsContainer.appendChild(star);
-        }
-      }
-
-      // Cambiar nombre de usuario dinámicamente
-      function changeUsername() {
-        const usernames = [data.usuario.nombre];
-        const currentUsername = document.getElementById("username").textContent;
-        let newUsername =
-          usernames[Math.floor(Math.random() * usernames.length)];
-
-        // Asegurar que no sea el mismo nombre
-        while (newUsername === currentUsername) {
-          newUsername = usernames[Math.floor(Math.random() * usernames.length)];
-        }
-
-        document.getElementById("username").textContent = newUsername;
-      }
-
-      // Cambiar username cada 10 segundos para mostrar el efecto
-      setInterval(changeUsername, 10000);
-
-      // Inicializar efectos
-      createParticles();
-      createStars();
-
-      // Agregar efecto de click en el nombre de usuario
-      document
-        .getElementById("username")
-        .addEventListener("click", function () {
-          this.style.animation = "none";
-          setTimeout(() => {
-            this.style.animation =
-              "gradientShift 3s ease-in-out infinite, rotate360 4s linear infinite, bounce 2s ease-in-out infinite, glow 2s ease-in-out infinite alternate";
-          }, 100);
-        });
+// Agregar efecto de click en el nombre de usuario
+document.getElementById("username").addEventListener("click", function () {
+  this.style.animation = "none";
+  setTimeout(() => {
+    this.style.animation =
+      "gradientShift 3s ease-in-out infinite, rotate360 4s linear infinite, bounce 2s ease-in-out infinite, glow 2s ease-in-out infinite alternate";
+  }, 100);
+});
     </script>
   </body>
 </html>

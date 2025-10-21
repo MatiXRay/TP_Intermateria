@@ -96,8 +96,21 @@ app.post('/login', (req, res) => {
 // 🧱 ENDPOINTS PROTEGIDOS
 
 
-// Obtener juegos por categoría desde Mongo
-app.get("/juegos/categoria/:nombre", async (req, res) => {
+// Agregar este endpoint en index.js después de los otros endpoints de MongoDB
+
+// Obtener todas las categorías disponibles desde MongoDB
+app.get("/categorias", autenticarToken, async (req, res) => {
+  try {
+    // Obtiene solo los nombres de categorías (sin duplicados)
+    const categorias = await CategoriaMongo.distinct("categoria");
+    res.json(categorias);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// El endpoint de juegos por categoría ya existe, pero asegúrate que esté así:
+app.get("/juegos/categoria/:nombre", autenticarToken, async (req, res) => {
   try {
     const categoria = req.params.nombre;
     const data = await CategoriaMongo.findOne({ categoria });
